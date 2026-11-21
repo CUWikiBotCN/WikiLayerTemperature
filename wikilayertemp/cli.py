@@ -27,6 +27,8 @@ DEFAULT_LAYERS = ROOT / "data" / "layers.json"
 DEFAULT_API = ROOT / "lua" / "runtime" / "api.lua"
 DEFAULT_OUT = ROOT / "lua" / "generated" / "Module_Data_Layer_Temperature.lua"
 DEFAULT_REPORT = ROOT / "data" / "build-report.json"
+DEFAULT_PAGE_INFO = ROOT / "data" / "page-info.json"
+DEFAULT_PI_OUT = ROOT / "dist" / "page-info"
 
 
 def normalize_title(text: str) -> str:
@@ -216,6 +218,46 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def page_info_head(comment: str, page: dict) -> str:
+    """wiki-batch-grab 的 PAGE_INFO 头，上传器读它做目标页与冲突基准。"""
+    return "\n".join(
+        [
+            "<%-- [PAGE_INFO]",
+            f"    comment = #{comment}#",
+            f"    pageTitle = #{page['title']}#",
+            f"    pageID = #{page.get('pageid', '')}#",
+            f"    revisionID = #{page.get('revid', '')}#",
+            f"    contentModel = #{page.get('model', '')}#",
+            f"    contentFormat = #{page.get('format', '')}#",
+            "[END_PAGE_INFO] --%>",
+        ]
+    )
+
+
+def cmd_pageinfo(args: argparse.Namespace) -> int:
+    config = json.loads(Path(args.page_info).read_text(encoding="utf-8"))
+    outdir = Path(args.pi_out)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    written = []
+    for page in config["pages"]:
+        src = ROOT / page["file"]
+        if not src.exists():
+            print(f"缺少源文件：{src}", file=sys.stderr)
+            return 1
+        body = src.read_text(encoding="utf-8")
+        name = page["title"].replace(":", "_").replace("/", "_")
+        ext = ".lua" if page.get("model") == "Scribunto" else ".wikitext"
+        target = outdir / f"{name}{ext}"
+        target.write_text(f"{page_info_head(config['comment'], page)}\n\n{body}", encoding="utf-8")
+        written.append((page["title"], target, page.get("revid")))
+
+    print(f"输出目录：{outdir}")
+    for title, target, revid in written:
+        print(f"  {title}  →  {target.name}（基线 rev {revid}）")
+    return 0
+
+
 def cmd_luatest(args: argparse.Namespace) -> int:
     lua = shutil.which("luajit") or shutil.which("lua5.1") or shutil.which("lua")
     if not lua:
@@ -289,6 +331,11 @@ def main(argv: list[str] | None = None) -> int:
     p_verify = sub.add_parser("verify", help="用采样点校验算法")
     common(p_verify)
     p_verify.set_defaults(func=cmd_verify)
+
+    p_pi = sub.add_parser("pageinfo", help="给待上传的文件套上 [PAGE_INFO] 头")
+    p_pi.add_argument("--page-info", default=str(DEFAULT_PAGE_INFO), help="页面信息表 page-info.json")
+    p_pi.add_argument("--pi-out", default=str(DEFAULT_PI_OUT), help="输出目录")
+    p_pi.set_defaults(func=cmd_pageinfo)
 
     p_lua = sub.add_parser("luatest", help="用 luajit 实跑生成的模块")
     common(p_lua)

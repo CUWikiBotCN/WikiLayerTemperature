@@ -107,6 +107,31 @@ python3 -m wikilayertemp build && python3 -m wikilayertemp verify && python3 -m 
 构建会自己检查：关键帧时间是否严格递增、切线是否有限值、导出标题与映射表是否一致、与插件采样点的偏差是否超过 0.01 °C。
 任何一项不过，`verify` 以非零码退出。
 
+## 推送到 wiki
+
+`lua/` 下是纯页面正文；上传器（`wiki-batch-grab` 的推回、`cwb upload` 或工作区工具）需要页面前面那段
+`[PAGE_INFO]` 头来知道目标页与冲突基准。生成一次：
+
+```bash
+python3 -m wikilayertemp pageinfo
+```
+
+产物在 `dist/page-info/`，文件名与 `wiki-batch-grab --name-style dash` 一致：
+
+| 文件 | 目标页 | 基线修订 |
+| --- | --- | --- |
+| `模块_Data_Layer Temperature.lua` | 模块:Data/Layer Temperature | 17495 |
+| `模块_温度平滑折线图.lua` | 模块:温度平滑折线图 | 12753 |
+| `模块_温度横向表格.lua` | 模块:温度横向表格 | 17323 |
+
+头的结构（`comment` / `pageTitle` / `pageID` / `revisionID` / `contentModel` / `contentFormat`）与
+`wiki-batch-grab` 写出的完全一致，上传器推完之后会自己清掉这段。
+
+**推送前先刷基线**：`data/page-info.json` 里的 `pageid` / `revid` 是本次改写所基于的版本。
+如果页面上已经有了别人的新编辑，先同步一次、确认没有冲突，再更新这两个值重新生成，否则会被判成基于旧版本的编辑。
+
+顺序建议：先推数据模块（不影响现有页面），再推两个渲染模块。
+
 ## 已知的数据源限制
 
 插件导出的 `samples` 块不参与生成，只用来交叉验证；它本身有若干问题（`count` 比实际点数少一、不覆盖进入地层的头几秒、均匀采样会漏尖峰），
