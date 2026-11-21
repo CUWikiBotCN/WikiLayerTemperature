@@ -4,7 +4,7 @@
 -- 本页由 WikiLayerTemperature 生成，请勿手工编辑；要改数据请改仓库后重新生成。
 -- 源数据：TempCurves_All_20261122_001326.json（插件导出时间 2026-11-22 00:13:26）
 -- 源文件 SHA-256：be870efd8dfb8da086e79040e9a7e6faec8516bca8cfd79e56c4eb90a792d401
--- 生成时间：2026-11-22T01:58:00+0800
+-- 生成时间：2026-11-22T02:41:15+0800
 --
 -- 每层的 keys 是 Unity AnimationCurve 的原始关键帧：
 --   { 时间(秒), 温度(°C), 入切线, 出切线 }
@@ -431,6 +431,12 @@ local function period_of(curve)
     return nil
 end
 
+-- 四舍五入到指定位数（负数也正确：-1.234 -> -1.23）
+local function round(value, digits)
+    local factor = 10 ^ (digits or 0)
+    return math.floor(value * factor + 0.5) / factor
+end
+
 local function format_time(seconds)
     local total = math.floor(seconds + 0.5)
     local minutes = math.floor(total / 60)
@@ -450,12 +456,17 @@ function p.get(name)
 end
 
 -- 某地层在时刻 t 的温度（°C）。t 从进入该地层起算，单位秒。
-function p.eval(name, t)
+-- 第三个参数可选：给定时按该位数四舍五入（界面显示用 1~2 位就够）。
+function p.eval(name, t, precision)
     local curve = resolve(name)
     if not curve then
         return nil
     end
-    return eval_curve(curve, tonumber(t) or 0)
+    local value = eval_curve(curve, tonumber(t) or 0)
+    if precision then
+        return round(value, tonumber(precision) or 0)
+    end
+    return value
 end
 
 -- 某地层在时刻 t 的温度变化率（°C/秒）。
@@ -494,6 +505,7 @@ end
 
 -- 折线图用的采样序列。返回 { {t, 温度}, ... }，t 为秒。
 -- options.count 采样段数（默认 240，产出 count+1 个点）
+-- options.precision 温度保留位数（默认 2），options.timePrecision 时间保留位数（默认 1）
 -- options.from / options.to 覆盖时间范围；恒定曲线默认取 0..300
 function p.series(name, options)
     local curve = resolve(name)
@@ -509,10 +521,13 @@ function p.series(name, options)
         to = tonumber(options.span) or 300
     end
 
+    local precision = tonumber(options.precision) or 2
+    local time_precision = tonumber(options.timePrecision) or 1
+
     local result = {}
     for i = 0, count do
         local t = from + (to - from) * i / count
-        result[i + 1] = { t, eval_curve(curve, t) }
+        result[i + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
     end
     return result
 end
@@ -574,9 +589,9 @@ function p.rows(name, options)
             seen[second] = true
             result[#result + 1] = {
                 format_time(second),
-                eval_curve(curve, t),
-                slope_curve(curve, t) * 60,
-                t,
+                round(eval_curve(curve, t), 2),
+                round(slope_curve(curve, t) * 60, 2),
+                round(t, 1),
             }
         end
     end

@@ -36,9 +36,10 @@ end
 --   3. 变化率为0且非最高温 → COLOR_ZERO_RATE
 --   4. 其余 → COLOR_DEFAULT
 local function getTempColor(t, c, maxT, minT)
-    if t == maxT then
+    local EPS = 0.011
+    if math.abs(t - maxT) <= EPS then
         return COLOR_MAX
-    elseif t == minT then
+    elseif math.abs(t - minT) <= EPS then
         return COLOR_MIN
     elseif c == 0 then
         return COLOR_ZERO_RATE

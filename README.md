@@ -85,11 +85,11 @@ docs/
 | 函数 | 说明 |
 | --- | --- |
 | `get(name)` | 按 id / 中文名 / 英文名取记录，大小写与空格不敏感 |
-| `eval(name, t)` | 第 t 秒的温度（°C），已按卷绕模式折返 |
+| `eval(name, t, precision?)` | 第 t 秒的温度（°C），已按卷绕模式折返；给 precision 时按该位数取整 |
 | `derivative(name, t)` / `rate(name, t)` | 变化率，°C/秒 与 °C/分钟 |
 | `period(name)` / `period_label(name)` | 周期秒数与 `M:SS` 文本；恒定曲线返回 nil |
-| `series(name, {count=240})` | 折线图采样，返回 `{ {t, 温度}, ... }` |
-| `rows(name, {max_gap=...})` | 表格行，按关键帧 + 折返点 + 段内补点生成 |
+| `series(name, {count=240, precision=2})` | 折线图采样，返回 `{ {t, 温度}, ... }`；温度默认 2 位、时间 1 位 |
+| `rows(name, {max_gap=...})` | 表格行，按关键帧 + 折返点 + 段内补点生成；温度与变化率均 2 位 |
 | `all()` | 全部记录 |
 
 ## 游戏更新后怎么重录
