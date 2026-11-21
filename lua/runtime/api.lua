@@ -181,6 +181,10 @@ local function round(value, digits)
     return math.floor(value * factor + 0.5) / factor
 end
 
+-- 上限：模板参数来自用户输入，不能让它把渲染拖死
+local MAX_SERIES = 2000
+local MAX_ROWS = 400
+
 local function format_time(seconds)
     local total = math.floor(seconds + 0.5)
     local minutes = math.floor(total / 60)
@@ -259,6 +263,9 @@ function p.series(name, options)
     options = options or {}
 
     local count = math.max(2, math.floor(tonumber(options.count) or 240))
+    if count > MAX_SERIES then
+        count = MAX_SERIES
+    end
     local from = tonumber(options.from) or 0
     local to = tonumber(options.to) or period_of(curve)
     if not to or to <= from then
@@ -289,6 +296,13 @@ function p.rows(name, options)
     local period = period_of(curve)
     local span = period or tonumber(options.span) or 300
     local max_gap = tonumber(options.max_gap) or (span / 12)
+    -- 防止 maxgap=0 或极小值把行数撑爆
+    if max_gap < span / MAX_ROWS then
+        max_gap = span / MAX_ROWS
+    end
+    if max_gap < 1 then
+        max_gap = 1
+    end
 
     local marks = { [0] = true }
     if curve.minAt then marks[curve.minAt] = true end
