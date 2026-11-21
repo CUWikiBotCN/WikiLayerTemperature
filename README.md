@@ -124,8 +124,23 @@ python3 -m wikilayertemp pageinfo
 | `模块_温度平滑折线图.lua` | 模块:温度平滑折线图 | 12753 |
 | `模块_温度横向表格.lua` | 模块:温度横向表格 | 17323 |
 
-头的结构（`comment` / `pageTitle` / `pageID` / `revisionID` / `contentModel` / `contentFormat`）与
-`wiki-batch-grab` 写出的完全一致，上传器推完之后会自己清掉这段。
+头字段与 `wiki-batch-grab` 一致（`comment` / `pageTitle` / `pageID` / `revisionID` / `contentModel` / `contentFormat`），
+上传器推完之后会自己清掉这段。
+
+**Scribunto 页要用 Lua 块注释包起来**，否则模块解析不过：
+
+```lua
+--[=[<%-- [PAGE_INFO]
+    comment = #...#
+    pageTitle = #模块:温度横向表格#
+    pageID = #2823#
+    revisionID = #17323#
+    contentModel = #Scribunto#
+    contentFormat = #text/plain#
+[END_PAGE_INFO] --%>--]=]
+```
+
+`pageinfo` 会按 `contentModel` 自动加这层包装（wikitext 页则保持裸的 `<%-- ... --%>`）。
 
 **推送前先刷基线**：`data/page-info.json` 里的 `pageid` / `revid` 是本次改写所基于的版本。
 如果页面上已经有了别人的新编辑，先同步一次、确认没有冲突，再更新这两个值重新生成，否则会被判成基于旧版本的编辑。

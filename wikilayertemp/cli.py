@@ -219,19 +219,25 @@ def cmd_verify(args: argparse.Namespace) -> int:
 
 
 def page_info_head(comment: str, page: dict) -> str:
-    """wiki-batch-grab 的 PAGE_INFO 头，上传器读它做目标页与冲突基准。"""
-    return "\n".join(
-        [
-            "<%-- [PAGE_INFO]",
-            f"    comment = #{comment}#",
-            f"    pageTitle = #{page['title']}#",
-            f"    pageID = #{page.get('pageid', '')}#",
-            f"    revisionID = #{page.get('revid', '')}#",
-            f"    contentModel = #{page.get('model', '')}#",
-            f"    contentFormat = #{page.get('format', '')}#",
-            "[END_PAGE_INFO] --%>",
-        ]
-    )
+    """PAGE_INFO 头，上传器读它做目标页与冲突基准。
+
+    wikitext 页直接写 `<%-- ... --%>`；Scribunto（Lua）页必须把这整段放进
+    Lua 块注释里，否则模块无法解析：`--[=[<%-- ... --%>--]=]`。
+    """
+    lines = [
+        "<%-- [PAGE_INFO]",
+        f"    comment = #{comment}#",
+        f"    pageTitle = #{page['title']}#",
+        f"    pageID = #{page.get('pageid', '')}#",
+        f"    revisionID = #{page.get('revid', '')}#",
+        f"    contentModel = #{page.get('model', '')}#",
+        f"    contentFormat = #{page.get('format', '')}#",
+        "[END_PAGE_INFO] --%>",
+    ]
+    head = "\n".join(lines)
+    if page.get("model") == "Scribunto" or page["title"].startswith(("模块:", "Module:")):
+        return f"--[=[{head}--]=]"
+    return head
 
 
 def cmd_pageinfo(args: argparse.Namespace) -> int:

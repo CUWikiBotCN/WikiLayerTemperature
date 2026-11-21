@@ -1,11 +1,11 @@
-<%-- [PAGE_INFO]
+--[=[<%-- [PAGE_INFO]
     comment = #Please do not remove this struct. It's record contains some important information of edit. This struct will be removed automatically after you push edits.#
     pageTitle = #模块:Data/Layer Temperature#
     pageID = #2779#
     revisionID = #17495#
     contentModel = #Scribunto#
-    contentFormat = ##
-[END_PAGE_INFO] --%>
+    contentFormat = #text/plain#
+[END_PAGE_INFO] --%>--]=]
 
 -- Module:Data/Layer_Temperature
 -- 各地层的环境温度曲线，供 {{地层温度}} 一系的模板/模块查询。
