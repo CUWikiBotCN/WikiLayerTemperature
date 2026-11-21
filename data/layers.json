@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "note": "地层索引与 wiki 侧标识映射。layer 必须与游戏 temperatureCurves 数组下标一致；id 与 模块:Data/layers 及 {{地层|id=...}} 保持同一写法。",
+  "layers": [
+    { "layer": 0, "id": "gravel_lands", "cn": "砾石荒原", "en": "Gravel_Lands", "wikiPage": "砾石荒原" },
+    { "layer": 1, "id": "deeper_gravel_lands", "cn": "深层砾石带", "en": "Deeper_Gravel_Lands", "wikiPage": "深层砾石带" },
+    { "layer": 2, "id": "dried_desert", "cn": "干旱沙漠", "en": "Dried_Desert", "wikiPage": "干旱沙漠" },
+    { "layer": 3, "id": "wasteland", "cn": "辐射废土", "en": "Wasteland", "wikiPage": "辐射废土" },
+    { "layer": 4, "id": "overgrown_depths", "cn": "深林丛渊", "en": "Overgrown_Depths", "wikiPage": "深林丛渊" },
+    { "layer": 5, "id": "frozen_chasm", "cn": "覆冰断崖", "en": "Frozen_Chasm", "wikiPage": "覆冰断崖" },
+    { "layer": 6, "id": "fungal_pools", "cn": "真菌洼地", "en": "Fungal_Pools", "wikiPage": "真菌洼地" },
+    { "layer": 7, "id": "crystalline_hollow", "cn": "晶蚀空穴", "en": "Crystalline_Hollow", "wikiPage": "晶蚀空穴" },
+    { "layer": 8, "id": "geothermal_vents", "cn": "地热喷口", "en": "Geothermal_Vents", "wikiPage": "地热喷口" },
+    { "layer": 9, "id": "where_we_must_reach", "cn": "必须抵达之地", "en": "Where_We_Must_Reach", "wikiPage": "必须抵达之地", "titlePattern": "必须抵达之地" },
+    { "layer": 10, "id": "crimson_ascent", "cn": "猩红长阶", "en": "Crimson_Ascent", "wikiPage": "猩红长阶" },
+    { "layer": 11, "id": "earth", "cn": "地球", "en": "Earth", "wikiPage": "地球", "titlePattern": "地球" }
+  ]
+}

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.luatest.lua
+.probe.lua
+lua/generated/*.selftest.lua

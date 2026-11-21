@@ -1,0 +1,20 @@
+[project]
+name = "wikilayertemperature"
+version = "0.1.0"
+description = "把 TemperatureMonitor 导出的温度曲线编译成《未知伤亡》wiki 使用的 Lua 数据模块"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+wikilayertemp = "wikilayertemp.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["wikilayertemp"]
