@@ -4,7 +4,7 @@
 -- 本页由 WikiLayerTemperature 生成，请勿手工编辑；要改数据请改仓库后重新生成。
 -- 源数据：TempCurves_All_20261122_001326.json（插件导出时间 2026-11-22 00:13:26）
 -- 源文件 SHA-256：be870efd8dfb8da086e79040e9a7e6faec8516bca8cfd79e56c4eb90a792d401
--- 生成时间：2026-11-22T02:48:16+0800
+-- 生成时间：2026-11-25T01:10:47+0800
 --
 -- 每层的 keys 是 Unity AnimationCurve 的原始关键帧：
 --   { 时间(秒), 温度(°C), 入切线, 出切线 }
@@ -535,6 +535,25 @@ function p.series(name, options)
     for i = 0, count do
         local t = from + (to - from) * i / count
         result[i + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
+    end
+
+    -- 等距采样可能错过极值（尖峰只有几秒宽），把真实极值点补进去，
+    -- 这样图上的最高/最低气泡落在真正的峰谷上，标签数值也准确。
+    if options.extremes ~= false and curve.minAt and curve.maxAt then
+        local function has_near(t)
+            for _, pt in ipairs(result) do
+                if math.abs(pt[1] - t) < 0.3 then
+                    return true
+                end
+            end
+            return false
+        end
+        for _, t in ipairs({ curve.minAt, curve.maxAt }) do
+            if t >= from and t <= to and not has_near(t) then
+                result[#result + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
+            end
+        end
+        table.sort(result, function(a, b) return a[1] < b[1] end)
     end
     return result
 end

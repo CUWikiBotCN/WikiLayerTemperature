@@ -2,7 +2,7 @@
     comment = #Please do not remove this struct. It's record contains some important information of edit. This struct will be removed automatically after you push edits.#
     pageTitle = #模块:温度横向表格#
     pageID = #2823#
-    revisionID = #17689#
+    revisionID = #17693#
     contentModel = #Scribunto#
     contentFormat = #text/plain#
 [END_PAGE_INFO] --%>--]=]

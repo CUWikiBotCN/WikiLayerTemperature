@@ -2,7 +2,7 @@
     comment = #Please do not remove this struct. It's record contains some important information of edit. This struct will be removed automatically after you push edits.#
     pageTitle = #模块:Data/Layer Temperature#
     pageID = #2779#
-    revisionID = #17687#
+    revisionID = #17694#
     contentModel = #Scribunto#
     contentFormat = #text/plain#
 [END_PAGE_INFO] --%>--]=]
@@ -13,7 +13,7 @@
 -- 本页由 WikiLayerTemperature 生成，请勿手工编辑；要改数据请改仓库后重新生成。
 -- 源数据：TempCurves_All_20261122_001326.json（插件导出时间 2026-11-22 00:13:26）
 -- 源文件 SHA-256：be870efd8dfb8da086e79040e9a7e6faec8516bca8cfd79e56c4eb90a792d401
--- 生成时间：2026-11-22T02:41:15+0800
+-- 生成时间：2026-11-25T01:10:47+0800
 --
 -- 每层的 keys 是 Unity AnimationCurve 的原始关键帧：
 --   { 时间(秒), 温度(°C), 入切线, 出切线 }
@@ -446,6 +446,10 @@ local function round(value, digits)
     return math.floor(value * factor + 0.5) / factor
 end
 
+-- 上限：模板参数来自用户输入，不能让它把渲染拖死
+local MAX_SERIES = 2000
+local MAX_ROWS = 400
+
 local function format_time(seconds)
     local total = math.floor(seconds + 0.5)
     local minutes = math.floor(total / 60)
@@ -524,6 +528,9 @@ function p.series(name, options)
     options = options or {}
 
     local count = math.max(2, math.floor(tonumber(options.count) or 240))
+    if count > MAX_SERIES then
+        count = MAX_SERIES
+    end
     local from = tonumber(options.from) or 0
     local to = tonumber(options.to) or period_of(curve)
     if not to or to <= from then
@@ -537,6 +544,25 @@ function p.series(name, options)
     for i = 0, count do
         local t = from + (to - from) * i / count
         result[i + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
+    end
+
+    -- 等距采样可能错过极值（尖峰只有几秒宽），把真实极值点补进去，
+    -- 这样图上的最高/最低气泡落在真正的峰谷上，标签数值也准确。
+    if options.extremes ~= false and curve.minAt and curve.maxAt then
+        local function has_near(t)
+            for _, pt in ipairs(result) do
+                if math.abs(pt[1] - t) < 0.3 then
+                    return true
+                end
+            end
+            return false
+        end
+        for _, t in ipairs({ curve.minAt, curve.maxAt }) do
+            if t >= from and t <= to and not has_near(t) then
+                result[#result + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
+            end
+        end
+        table.sort(result, function(a, b) return a[1] < b[1] end)
     end
     return result
 end
@@ -554,6 +580,13 @@ function p.rows(name, options)
     local period = period_of(curve)
     local span = period or tonumber(options.span) or 300
     local max_gap = tonumber(options.max_gap) or (span / 12)
+    -- 防止 maxgap=0 或极小值把行数撑爆
+    if max_gap < span / MAX_ROWS then
+        max_gap = span / MAX_ROWS
+    end
+    if max_gap < 1 then
+        max_gap = 1
+    end
 
     local marks = { [0] = true }
     if curve.minAt then marks[curve.minAt] = true end

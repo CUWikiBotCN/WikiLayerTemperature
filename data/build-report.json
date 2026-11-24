@@ -262,6 +262,6 @@
   ],
   "output": {
     "file": "lua/generated/Module_Data_Layer_Temperature.lua",
-    "bytes": 17960
+    "bytes": 18786
   }
 }

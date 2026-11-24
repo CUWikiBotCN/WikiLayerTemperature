@@ -280,6 +280,25 @@ function p.series(name, options)
         local t = from + (to - from) * i / count
         result[i + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
     end
+
+    -- 等距采样可能错过极值（尖峰只有几秒宽），把真实极值点补进去，
+    -- 这样图上的最高/最低气泡落在真正的峰谷上，标签数值也准确。
+    if options.extremes ~= false and curve.minAt and curve.maxAt then
+        local function has_near(t)
+            for _, pt in ipairs(result) do
+                if math.abs(pt[1] - t) < 0.3 then
+                    return true
+                end
+            end
+            return false
+        end
+        for _, t in ipairs({ curve.minAt, curve.maxAt }) do
+            if t >= from and t <= to and not has_near(t) then
+                result[#result + 1] = { round(t, time_precision), round(eval_curve(curve, t), precision) }
+            end
+        end
+        table.sort(result, function(a, b) return a[1] < b[1] end)
+    end
     return result
 end
 

@@ -69,8 +69,11 @@ def test_lua_module_runs():
 local mod = dofile(arg[1])
 local out = {}
 for _, curve in ipairs(mod.all()) do
-  out[#out + 1] = string.format("%s %.4f %d %d",
-    curve.id, mod.eval(curve.id, 0), #mod.series(curve.id, {count = 12}), #mod.rows(curve.id))
+  out[#out + 1] = string.format("%s %.4f %d %d %d",
+    curve.id, mod.eval(curve.id, 0),
+    #mod.series(curve.id, {count = 12, extremes = false}),
+    #mod.series(curve.id, {count = 12}),
+    #mod.rows(curve.id))
 end
 print(table.concat(out, "\\n"))
 """,
@@ -89,7 +92,9 @@ print(table.concat(out, "\\n"))
     meta = load_layer_meta(LAYERS)
     by_id = {row["id"]: curves[row["layer"]] for row in meta.values()}
     for line in lines:
-        layer_id, value, series_len, rows_len = line.split()
+        layer_id, value, plain_len, with_ext, rows_len = line.split()
         assert float(value) == pytest.approx(by_id[layer_id].eval(0.0), abs=1e-3)
-        assert int(series_len) == 13  # count + 1
+        assert int(plain_len) == 13  # count + 1，不含极值点
+        # 非恒定曲线会额外插入 1~2 个真实极值点
+        assert 13 <= int(with_ext) <= 15
         assert int(rows_len) >= 1

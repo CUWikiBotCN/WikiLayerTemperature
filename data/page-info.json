@@ -6,7 +6,7 @@
       "file": "lua/generated/Module_Data_Layer_Temperature.lua",
       "title": "模块:Data/Layer Temperature",
       "pageid": 2779,
-      "revid": 17687,
+      "revid": 17694,
       "model": "Scribunto",
       "format": "text/plain"
     },
@@ -22,7 +22,15 @@
       "file": "lua/wiki/Module_温度横向表格.lua",
       "title": "模块:温度横向表格",
       "pageid": 2823,
-      "revid": 17689,
+      "revid": 17693,
+      "model": "Scribunto",
+      "format": "text/plain"
+    },
+    {
+      "file": "lua/wiki/Module_平滑折线图.lua",
+      "title": "模块:平滑折线图",
+      "pageid": 2782,
+      "revid": 13049,
       "model": "Scribunto",
       "format": "text/plain"
     }

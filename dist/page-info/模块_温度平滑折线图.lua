@@ -79,8 +79,15 @@ function p.main(frame)
         THRESHOLD     = tonumber(getArg("threshold")) or 10
     }
 
+    -- 恒定温度没有"极值"也没有"平均"可言，画出来只会让整条线布满气泡
+    if curve.maxTemp and curve.minTemp and (curve.maxTemp - curve.minTemp) < 0.05 then
+        opts.showMarkPoint = false
+        opts.showMarkLine = false
+    end
+
     local points = dataModule.series(curve, {
-        count = tonumber(getArg("points")) or DEFAULT_POINTS
+        count = tonumber(getArg("points")) or DEFAULT_POINTS,
+        extremes = true
     })
     if not points then
         return '<strong class="error">错误：地层 "' .. name .. '" 没有可用的采样序列。</strong>'
